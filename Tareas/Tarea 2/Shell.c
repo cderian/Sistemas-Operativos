@@ -10,6 +10,31 @@
 #include <sys/wait.h>
 #define COMANDO_VALIDO(comando, entrada) (strcmp (comando, entrada) == 0)
 
+int pwd(const char * arg)
+{
+	pid_t pid;
+	int status;
+	pid = fork();
+
+	switch(pid){
+		case -1:
+		perror("Error en el fork\n");
+		exit(-1);
+		case 0:
+		execl("/bin/pwd","/bin/pwd", NULL);
+		perror("Error de execl.\n");
+		exit(-1);
+		break;
+		default:
+		while(wait(&status) != pid);
+		if(status != 0){
+			printf("Error del hijo\n");
+		}
+	}
+
+	return status;
+}
+
 int ls(const char * arg)
 {
 	pid_t pid;
@@ -53,7 +78,7 @@ int main(int argc, char const *argv[])
 		}
 		else if (COMANDO_VALIDO(comando, "pwd"))
 		{
-			printf("Comando pwd aún no implementado\n");
+			pwd(argv[0]);
 		}
 		else if (COMANDO_VALIDO(comando, "cat"))
 		{
