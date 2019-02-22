@@ -12,22 +12,24 @@
 
 int ls(const char * arg)
 {
-	int status;
 	pid_t pid;
+	int status;
 	pid = fork();
 
-	if(pid==0)
-	{
-		execl("/bin/ls", "/bin/ls", arg, NULL);
-		exit(EXIT_FAILURE);
-	}
-	else if(pid < 0)
-	{
-		status = -1;
-	}
-	else
-	{
-		status = -1;
+	switch(pid){
+		case -1:
+		perror("Error en el fork\n");
+		exit(-1);
+		case 0:
+		execl("/bin/ls","/bin/ls", NULL);
+		perror("Error de execl.\n");
+		exit(-1);
+		break;
+		default:
+		while(wait(&status) != pid);
+		if(status != 0){
+			printf("Error del hijo\n");
+		}
 	}
 
 	return status;
@@ -47,7 +49,7 @@ int main(int argc, char const *argv[])
 		}
 		else if (COMANDO_VALIDO(comando, "ls"))
 		{
-			ls(argv[1]);
+			ls(argv[0]);
 		}
 		else if (COMANDO_VALIDO(comando, "pwd"))
 		{
