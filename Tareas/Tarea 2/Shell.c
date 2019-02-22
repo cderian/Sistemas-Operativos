@@ -5,11 +5,32 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 #define COMANDO_VALIDO(comando, entrada) (strcmp (comando, entrada) == 0)
 
-void procesarComando()
+int ls(const char * arg)
 {
+	int status;
+	pid_t pid;
+	pid = fork();
 
+	if(pid==0)
+	{
+		execl("/bin/ls", "/bin/ls", arg, NULL);
+		exit(EXIT_FAILURE);
+	}
+	else if(pid < 0)
+	{
+		status = -1;
+	}
+	else
+	{
+		status = -1;
+	}
+
+	return status;
 }
 
 int main(int argc, char const *argv[])
@@ -26,7 +47,7 @@ int main(int argc, char const *argv[])
 		}
 		else if (COMANDO_VALIDO(comando, "ls"))
 		{
-			printf("Comando ls aún no implementado\n");
+			ls(argv[1]);
 		}
 		else if (COMANDO_VALIDO(comando, "pwd"))
 		{
