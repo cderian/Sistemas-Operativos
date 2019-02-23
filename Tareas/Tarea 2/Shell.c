@@ -10,7 +10,7 @@
 #include <sys/wait.h>
 #define COMANDO_VALIDO(comando, entrada) (strcmp (comando, entrada) == 0)
 
-int pwd(const char * arg)
+int pwd()
 {
 	pid_t pid;
 	int status;
@@ -18,24 +18,25 @@ int pwd(const char * arg)
 
 	switch(pid){
 		case -1:
-		perror("Error en el fork\n");
-		exit(-1);
+			perror("Error en el fork\n");
+			exit(-1);
 		case 0:
-		execl("/bin/pwd","pwd", NULL);
-		perror("Error de execl.\n");
-		exit(-1);
-		break;
+			execl("/bin/pwd","pwd", NULL);
+			perror("Error de execl.\n");
+			exit(-1);
+			break;
 		default:
-		while(wait(&status) != pid);
-		if(status != 0){
-			printf("Error del hijo\n");
-		}
+			while(wait(&status) != pid);
+				if(status != 0)
+				{
+					printf("Error del hijo\n");
+				}
 	}
 
 	return status;
 }
 
-int ls(const char * arg)
+int ls()
 {
 	pid_t pid;
 	int status;
@@ -46,9 +47,9 @@ int ls(const char * arg)
 		perror("Error en el fork\n");
 		exit(-1);
 		case 0:
-		execl("/bin/ls","ls", NULL);
-		perror("Error de execl.\n");
-		exit(-1);
+			execl("/bin/ls","ls", NULL);
+			perror("Error de execl.\n");
+			exit(-1);
 		break;
 		default:
 		while(wait(&status) != pid);
@@ -68,18 +69,19 @@ int cp(const char * arg1, const char * arg2)
 
 	switch(pid){
 		case -1:
-		perror("Error en el fork\n");
-		exit(-1);
+			perror("Error en el fork\n");
+			exit(-1);
 		case 0:
-		execl("/bin/cp","cp", arg1, arg2, NULL);
-		perror("Error de execl.\n");
-		exit(-1);
-		break;
+			execl("/bin/cp","cp", arg1, arg2, NULL);
+			perror("Error de execl.\n");
+			exit(-1);
+			break;
 		default:
-		while(wait(&status) != pid);
-		if(status != 0){
-			printf("Error del hijo\n");
-		}
+			while(wait(&status) != pid);
+				if(status != 0)
+				{
+					printf("Error del hijo\n");
+				}
 	}
 
 	return status;
@@ -93,18 +95,19 @@ int cat(const char * arg1, const char * arg2)
 
 	switch(pid){
 		case -1:
-		perror("Error en el fork\n");
-		exit(-1);
+			perror("Error en el fork\n");
+			exit(-1);
 		case 0:
-		execl("/bin/cat","cat", arg1, arg2, NULL);
-		perror("Error de execl.\n");
-		exit(-1);
-		break;
+			execl("/bin/cat","cat", arg1, arg2, NULL);
+			perror("Error de execl.\n");
+			exit(-1);
+			break;
 		default:
-		while(wait(&status) != pid);
-		if(status != 0){
-			printf("Error del hijo\n");
-		}
+			while(wait(&status) != pid);
+				if(status != 0)
+				{
+					printf("Error del hijo\n");
+				}
 	}
 
 	return status;
@@ -126,11 +129,11 @@ int main(int argc, char const *argv[])
 		}
 		else if (COMANDO_VALIDO(comando, "ls"))
 		{
-			ls(argv[0]);
+			ls();
 		}
 		else if (COMANDO_VALIDO(comando, "pwd"))
 		{
-			pwd(argv[0]);
+			pwd();
 		}
 		else if (COMANDO_VALIDO(comando, "cat"))
 		{
