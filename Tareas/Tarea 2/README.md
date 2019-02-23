@@ -1,6 +1,5 @@
-## Sistemas Operativos. 2019-2.
-## Tarea 2.
-## Estrada Gómez César Derian. 31222446-4.
+## Sistemas Operativos. Tarea 2.
+## Estrada Gómez César Derian.
 
 ## Descripción
 Programa que consiste en simular el comportamiento de un shell.

@@ -8,7 +8,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-#include "Grep.h"
+#include "grep.h"
 #define COMANDO_VALIDO(comando, entrada) (strcmp (comando, entrada) == 0)
 
 int pwd()
@@ -48,7 +48,7 @@ int ls()
 		perror("Error en el fork\n");
 		exit(-1);
 		case 0:
-			execl("/bin/ls","ls", NULL);
+			execl("/bin/ls","ls",NULL);
 			perror("Error de execl.\n");
 			exit(-1);
 		break;
@@ -130,15 +130,7 @@ int main(int argc, char const *argv[])
 		}
 		else if (COMANDO_VALIDO(comando, "ls"))
 		{
-			scanf("%s", arg1);
-			scanf("%s", arg2);
-			if(NULL != arg1 && NULL != arg2){
-				ls(arg1, arg2);
-			}else if(NULL != arg1 && NULL == arg2){
-				ls(arg1);
-			}else{
-				ls();
-			}
+			ls();
 		}
 		else if (COMANDO_VALIDO(comando, "pwd"))
 		{
