@@ -113,6 +113,24 @@ int cat(const char * arg1, const char * arg2)
 	return status;
 }
 
+void grep(const char * arg1, const char * arg2)
+{
+	char linea[1024];
+	char *subcadena;
+    FILE *fich;
+ 
+    fich = fopen(arg2, "r");
+    //Lee línea a línea y escribe en pantalla hasta el fin de fichero
+    while(fgets(linea, 1024, (FILE*) fich)) {
+    	subcadena = strstr(linea, arg1);
+    	if (NULL != subcadena)
+    	{
+    		printf("%s\n", linea);
+    	}
+    }
+    fclose(fich);
+}
+
 int main(int argc, char const *argv[])
 {
 	while(1)
@@ -149,7 +167,9 @@ int main(int argc, char const *argv[])
 		}
 		else if (COMANDO_VALIDO(comando, "grep"))
 		{
-			printf("Comando grep aún no implementado\n");
+			scanf("%s", arg1);
+			scanf("%s", arg2);
+			grep(arg1, arg2);
 		}
 		else
 		{
