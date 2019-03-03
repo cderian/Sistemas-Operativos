@@ -8,98 +8,52 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-#include "grep.h"
 #define COMANDO_VALIDO(comando, entrada) (strcmp (comando, entrada) == 0)
 
-int pwd()
+char* instruccion[3];
+char* params[1];
+
+int token (const char* str) {
+   const char s[2] = "-";
+   char *token;
+   
+   token = strtok(str, s);
+   
+   int i=0;
+   while( token != NULL ) {
+      instruccion[i] = token;
+      token = strtok(NULL, s);
+      i++;
+   }
+
+   return 0;
+}
+
+/*char* obtener_comando(const char* arg){
+	const char espacio[2] = " ";
+	char *token;
+	token = strtok(arg, espacio);
+	return token;
+}*/
+
+int ejecutar(const char * arg)
 {
 	pid_t pid;
 	int status;
+	char comando[256];
 	pid = fork();
+
+	token(arg);
 
 	switch(pid){
 		case -1:
 			perror("Error en el fork\n");
 			exit(-1);
 		case 0:
-			execl("/bin/pwd","pwd", NULL);
-			perror("Error de execl.\n");
-			exit(-1);
-			break;
-		default:
-			while(wait(&status) != pid);
-				if(status != 0)
-				{
-					printf("Error del hijo\n");
-				}
-	}
-
-	return status;
-}
-
-int ls()
-{
-	pid_t pid;
-	int status;
-	pid = fork();
-
-	switch(pid){
-		case -1:
-		perror("Error en el fork\n");
-		exit(-1);
-		case 0:
-			execl("/bin/ls","ls",NULL);
-			perror("Error de execl.\n");
-			exit(-1);
-		break;
-		default:
-		while(wait(&status) != pid);
-		if(status != 0){
-			printf("Error del hijo\n");
-		}
-	}
-
-	return status;
-}
-
-int cp(const char * arg1, const char * arg2)
-{
-	pid_t pid;
-	int status;
-	pid = fork();
-
-	switch(pid){
-		case -1:
-			perror("Error en el fork\n");
-			exit(-1);
-		case 0:
-			execl("/bin/cp","cp", arg1, arg2, NULL);
-			perror("Error de execl.\n");
-			exit(-1);
-			break;
-		default:
-			while(wait(&status) != pid);
-				if(status != 0)
-				{
-					printf("Error del hijo\n");
-				}
-	}
-
-	return status;
-}
-
-int cat(const char * arg1, const char * arg2)
-{
-	pid_t pid;
-	int status;
-	pid = fork();
-
-	switch(pid){
-		case -1:
-			perror("Error en el fork\n");
-			exit(-1);
-		case 0:
-			execl("/bin/cat","cat", arg1, arg2, NULL);
+			strcpy(comando, "/bin/");
+			memcpy(params, instruccion+1, 1*sizeof(char));
+			//execve(strcat(comando, instruccion[0]), params);
+			execl(strcat(comando, instruccion[0]), instruccion[0], params[0], NULL);
 			perror("Error de execl.\n");
 			exit(-1);
 			break;
@@ -119,8 +73,6 @@ int main(int argc, char const *argv[])
 	while(1)
 	{
 		char comando[2048];
-		char arg1[2048];
-		char arg2[2048];
 		printf("shell-1.0$ ");
 		scanf("%s", comando);
 
@@ -128,36 +80,8 @@ int main(int argc, char const *argv[])
 		{
 			exit(1);
 		}
-		else if (COMANDO_VALIDO(comando, "ls"))
-		{
-			ls();
-		}
-		else if (COMANDO_VALIDO(comando, "pwd"))
-		{
-			pwd();
-		}
-		else if (COMANDO_VALIDO(comando, "cat"))
-		{
-			scanf("%s", arg1);
-			scanf("%s", arg2);
-			cat(arg1, arg2);
-		}
-		else if (COMANDO_VALIDO(comando, "cp"))
-		{
-			scanf("%s", arg1);
-			scanf("%s", arg2);
-			cp(arg1, arg2);
-		}
-		else if (COMANDO_VALIDO(comando, "grep"))
-		{
-			scanf("%s", arg1);
-			scanf("%s", arg2);
-			grep(arg1, arg2);
-		}
-		else
-		{
-			printf("ERROR: Comando Inválido\n");
-		}
+
+		ejecutar(comando);
 	}
 	return 0;
 }
