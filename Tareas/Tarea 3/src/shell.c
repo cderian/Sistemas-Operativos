@@ -1,5 +1,5 @@
 // Sistemas Operativos. 2019-2.
-// Tarea 2.
+// Tarea 3.
 // Estrada Gómez César Derian. 31222446-4.
 
 #include <stdio.h>
@@ -11,39 +11,38 @@
 #define COMANDO_VALIDO(comando, entrada) (strcmp (comando, entrada) == 0)
 
 char* instruccion[3];
-char* params[1];
+char* params[2];
 
-int token (const char* str) {
-   const char s[2] = "-";
+int tokenizar (char* comando, const char * caracter) {
    char *token;
    
-   token = strtok(str, s);
+   token = strtok(comando, caracter);
    
    int i=0;
    while( token != NULL ) {
       instruccion[i] = token;
-      token = strtok(NULL, s);
+      token = strtok(NULL, caracter);
       i++;
    }
 
    return 0;
 }
 
-/*char* obtener_comando(const char* arg){
-	const char espacio[2] = " ";
-	char *token;
-	token = strtok(arg, espacio);
-	return token;
-}*/
+char* separar_params(){
+	int i=1;
+	while(instruccion[i] != NULL)
+	{
+		params[i-1] = instruccion[i];
+		++i;
+	}
+}
 
-int ejecutar(const char * arg)
+int ejecutar()
 {
 	pid_t pid;
 	int status;
 	char comando[256];
 	pid = fork();
-
-	token(arg);
 
 	switch(pid){
 		case -1:
@@ -51,10 +50,8 @@ int ejecutar(const char * arg)
 			exit(-1);
 		case 0:
 			strcpy(comando, "/bin/");
-			memcpy(params, instruccion+1, 1*sizeof(char));
-			//execve(strcat(comando, instruccion[0]), params);
-			execl(strcat(comando, instruccion[0]), instruccion[0], params[0], NULL);
-			perror("Error de execl.\n");
+			execv(strcat(comando, instruccion[0]), params);
+			perror("Error de execv.\n");
 			exit(-1);
 			break;
 		default:
@@ -72,16 +69,18 @@ int main(int argc, char const *argv[])
 {
 	while(1)
 	{
-		char comando[2048];
+		char comando[81];
 		printf("shell-1.0$ ");
-		scanf("%s", comando);
+		fgets(comando, 81, stdin);
+		comando[strlen(comando)-1] = '\0';
 
 		if(COMANDO_VALIDO(comando, "exit"))
 		{
 			exit(1);
 		}
-
-		ejecutar(comando);
+		tokenizar(comando, " ");
+		separar_params();
+		ejecutar();
 	}
 	return 0;
 }
