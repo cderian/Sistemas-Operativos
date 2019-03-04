@@ -9,11 +9,24 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #define COMANDO_VALIDO(comando, entrada) (strcmp (comando, entrada) == 0)
+#define true 0
+#define false 1
 
-char* instruccion[3];
-char* params[2];
+int contar_blancos(char* comando)
+{
+	int blancos = 0;
+	for (int i = 0; i < strlen(comando); i++)
+	{
+		if (comando[i] == ' ')
+		{
+			blancos++;
+		}
+	}
 
-int tokenizar (char* comando, const char * caracter) {
+	return blancos;
+}
+
+/*int tokenizar (char* comando, const char * caracter, int num_params) {
    char *token;
    
    token = strtok(comando, caracter);
@@ -35,22 +48,25 @@ char* separar_params(){
 		params[i-1] = instruccion[i];
 		++i;
 	}
-}
+}*/
 
-int ejecutar()
+int ejecutar (char* comando, const char * caracter, int num_params) 
 {
 	pid_t pid;
 	int status;
-	char comando[256];
-	pid = fork();
+	char com[256];
+
+	if(num_params == 0)
+	{
+		pid = fork();
 
 	switch(pid){
 		case -1:
 			perror("Error en el fork\n");
 			exit(-1);
 		case 0:
-			strcpy(comando, "/bin/");
-			execv(strcat(comando, instruccion[0]), params);
+			strcpy(com, "/bin/");
+			execl(strcat(com, comando), comando, NULL);
 			perror("Error de execv.\n");
 			exit(-1);
 			break;
@@ -61,6 +77,53 @@ int ejecutar()
 					printf("Error del hijo\n");
 				}
 	}
+	}else{
+
+	char* instruccion[num_params+1];
+	char* params[num_params];
+	/* Tokenización */
+	char *token;
+	token = strtok(comando, caracter);
+	int i=0;
+
+	while( token != NULL ) {
+		instruccion[i] = token;
+		token = strtok(NULL, caracter);
+		i++;
+	}
+
+	/* Separando params */
+	int j=1;
+	while(instruccion[j] != NULL)
+	{
+		params[j-1] = instruccion[j];
+		++j;
+	}
+
+	/* Parte de ejecución*/
+	/*pid_t pid;
+	int status;
+	char com[256];*/
+	pid = fork();
+
+	switch(pid){
+		case -1:
+			perror("Error en el fork\n");
+			exit(-1);
+		case 0:
+			strcpy(com, "/bin/");
+			execv(strcat(com, instruccion[0]), params);
+			perror("Error de execv.\n");
+			exit(-1);
+			break;
+		default:
+			while(wait(&status) != pid);
+				if(status != 0)
+				{
+					printf("Error del hijo\n");
+				}
+	}
+}
 
 	return status;
 }
@@ -78,9 +141,9 @@ int main(int argc, char const *argv[])
 		{
 			exit(1);
 		}
-		tokenizar(comando, " ");
-		separar_params();
-		ejecutar();
+		ejecutar(comando, " ", contar_blancos(comando));
+		//separar_params();
+		//ejecutar();
 	}
 	return 0;
 }
