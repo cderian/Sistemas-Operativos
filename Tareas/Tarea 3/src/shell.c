@@ -2,148 +2,77 @@
 // Tarea 3.
 // Estrada Gómez César Derian. 31222446-4.
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
 #include <sys/types.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <dirent.h>
+#include <sys/stat.h>
+#include <time.h>
+#include <string.h>
+#include<stdlib.h>
 #include <sys/wait.h>
-#define COMANDO_VALIDO(comando, entrada) (strcmp (comando, entrada) == 0)
-#define true 0
-#define false 1
 
-int contar_blancos(char* comando)
-{
-	int blancos = 0;
-	for (int i = 0; i < strlen(comando); i++)
-	{
-		if (comando[i] == ' ')
-		{
-			blancos++;
-		}
-	}
+char* inputs[40];
+char* instrucciones[40];
 
-	return blancos;
+void tokens(char * parametro){
+	int i = 0;
+    char *token = strtok(parametro, " ");
+
+    while(token != NULL){
+    	inputs[i] = malloc(strlen(token) + 1);
+		strcpy(inputs[i], token);
+        token = strtok(NULL, " ");
+        i++;
+    }
 }
 
-/*int tokenizar (char* comando, const char * caracter, int num_params) {
-   char *token;
-   
-   token = strtok(comando, caracter);
-   
-   int i=0;
-   while( token != NULL ) {
-      instruccion[i] = token;
-      token = strtok(NULL, caracter);
-      i++;
-   }
-
-   return 0;
-}
-
-char* separar_params(){
-	int i=1;
-	while(instruccion[i] != NULL)
+void elimina_primero(){
+	int j=0;
+	while(inputs[j] != NULL)
 	{
-		params[i-1] = instruccion[i];
-		++i;
-	}
-}*/
-
-int ejecutar (char* comando, const char * caracter, int num_params) 
-{
-	pid_t pid;
-	int status;
-	char com[256];
-
-	if(num_params == 0)
-	{
-		pid = fork();
-
-	switch(pid){
-		case -1:
-			perror("Error en el fork\n");
-			exit(-1);
-		case 0:
-			strcpy(com, "/bin/");
-			execl(strcat(com, comando), comando, NULL);
-			perror("Error de execv.\n");
-			exit(-1);
-			break;
-		default:
-			while(wait(&status) != pid);
-				if(status != 0)
-				{
-					printf("Error del hijo\n");
-				}
-	}
-	}else{
-
-	char* instruccion[num_params+1];
-	char* params[num_params];
-	/* Tokenización */
-	char *token;
-	token = strtok(comando, caracter);
-	int i=0;
-
-	while( token != NULL ) {
-		instruccion[i] = token;
-		token = strtok(NULL, caracter);
-		i++;
-	}
-
-	/* Separando params */
-	int j=1;
-	while(instruccion[j] != NULL)
-	{
-		params[j-1] = instruccion[j];
+		instrucciones[j] = inputs[j+1];
 		++j;
 	}
+}
 
-	/* Parte de ejecución*/
-	/*pid_t pid;
-	int status;
-	char com[256];*/
+void ejecuta_accion(char * accion){
+	int estado;
+	int jalo;
+	pid_t pid;
+	char comando[1024];
+	char* algo;
 	pid = fork();
-
-	switch(pid){
-		case -1:
-			perror("Error en el fork\n");
-			exit(-1);
-		case 0:
-			strcpy(com, "/bin/");
-			execv(strcat(com, instruccion[0]), params);
-			perror("Error de execv.\n");
-			exit(-1);
-			break;
-		default:
-			while(wait(&status) != pid);
-				if(status != 0)
-				{
-					printf("Error del hijo\n");
-				}
-	}
-}
-
-	return status;
-}
-
-int main(int argc, char const *argv[])
-{
-	while(1)
-	{
-		char comando[81];
-		printf("shell-1.0$ ");
-		fgets(comando, 81, stdin);
-		comando[strlen(comando)-1] = '\0';
-
-		if(COMANDO_VALIDO(comando, "exit"))
-		{
-			exit(1);
+	if(pid == 0){
+		tokens(accion);
+		strcpy(comando, "/bin/");
+		strcat(comando, accion);
+		jalo = execv(comando, inputs); 
+		if(jalo == -1 && strcmp(accion, "exit") != 0){			
+			execv(accion, inputs);
+			printf("%s\n", "Comando desconocido");
 		}
-		ejecutar(comando, " ", contar_blancos(comando));
-		//separar_params();
-		//ejecutar();
+	} else if(pid < 0){
+		printf("*****Error no se pudo hacer hijo del proceso.\n*****");
+		estado = -1;
+	} else{
+		if(waitpid(pid, &estado, 0) != pid){
+			printf("Error\n");
+			estado = -1;
+		}
 	}
-	return 0;
+}
+
+int main() {
+	char comando[65];
+
+	while(strcmp(comando, "exit") != 0){
+	    printf("shell-2.0$ ");
+	    fgets(comando, 81, stdin);
+	    comando[strlen(comando)-1] = '\0';
+	    ejecuta_accion(comando);
+    }
+
+    return(0);
 }
