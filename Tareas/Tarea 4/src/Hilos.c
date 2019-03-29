@@ -78,35 +78,39 @@ void checarVecinos(int *id_hilo){
 /*
  * Ejecuta los hilos de cada elemento del arreglo.
  */
-void ejecutar(){
+void ejecutar(int iteraciones){
 
-	// Imprimos el array inicial y creamos una copia de él.
-	imprimir();
-    copiar();
+	for(int t = 0; t < iteraciones; t++)
+	{
+	
+		// Imprimos el array inicial y creamos una copia de él.
+		imprimir();
+		copiar();
 
-	int i = 0;
-	int hilo;
-	while(i < 6){
-		hilo = i;
-		pthread_mutex_lock(&mutex);
-		printf("\nVerificando hilo %d en tiempo 0\n", i);
-		// Creamos los hilos y los ejecutamos con la función checarVecinos
-		pthread_create(&hilos[i], NULL, (void*)checarVecinos, (void*)&hilo);
-		printf("Terminando hilo %d en tiempo 0\n", i);
-		pthread_mutex_unlock(&mutex);
-		i++;
+		int i = 0;
+		int hilo;
+		while(i < 6){
+			hilo = i;
+			pthread_mutex_lock(&mutex);
+			printf("\nVerificando hilo %d en tiempo %d\n", i, t);
+			// Creamos los hilos y los ejecutamos con la función checarVecinos
+			pthread_create(&hilos[i], NULL, (void*)checarVecinos, (void*)&hilo);
+			printf("Terminando hilo %d en tiempo %d\n", i, t);
+			pthread_mutex_unlock(&mutex);
+			i++;
+		}
+
+		// Esperamos que termine la ejecución del hilo.
+		pthread_join(hilos[0], NULL);
+		pthread_join(hilos[1], NULL);
+		pthread_join(hilos[2], NULL);
+		pthread_join(hilos[3], NULL);
+		pthread_join(hilos[4], NULL);
+		pthread_join(hilos[5], NULL);
+
+		// Imprimos el array resultante.
+		imprimir();
 	}
-
-	// Esperamos que termine la ejecución del hilo.
-	pthread_join(hilos[0], NULL);
-	pthread_join(hilos[1], NULL);
-	pthread_join(hilos[2], NULL);
-	pthread_join(hilos[3], NULL);
-	pthread_join(hilos[4], NULL);
-	pthread_join(hilos[5], NULL);
-
-	// Imprimos el array resultante.
-	imprimir();
 }
 
 /*
@@ -117,13 +121,17 @@ int main(int argc, char** argv){
 	if(argc < 2){
 		printf("\nERROR: Falto especificar número de iteraciones.\n\n");
         return 1;
+	}else if(argc > 2){
+		printf("\nERROR: Demasiados parámetros.\n\n");
+        return 1;
 	}
 	if (pthread_mutex_init(&mutex, NULL) != 0){
         printf("\nERROR: No se pudo inicializr hilo mutex.\n\n");
         return 1;
     }
 
-	ejecutar();
+	int num_it = atoi(argv[1]);
+	ejecutar(num_it);
 	pthread_mutex_destroy(&mutex);
 	return 0;
 }
