@@ -12,4 +12,4 @@ Para compilar el archivo:
 	gcc -pthread Hilos.c -o [nombre del programa]
 
 Para ejecutar el archivo:
-	./[nombre del programa]
+	./[nombre del programa] [número de iteraciones]

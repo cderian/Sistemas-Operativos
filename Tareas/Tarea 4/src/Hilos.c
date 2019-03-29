@@ -82,7 +82,6 @@ void ejecutar(int iteraciones){
 
 	for(int t = 0; t < iteraciones; t++)
 	{
-		printf("\n------------------ TIEMPO %d ------------------", t);
 		// Imprimos el array inicial y creamos una copia de él.
 		imprimir();
 		copiar();
@@ -111,7 +110,6 @@ void ejecutar(int iteraciones){
 
 		// Imprimos el array resultante.
 		imprimir();
-		printf("----------------------------------------------\n");
 	}
 }
 
