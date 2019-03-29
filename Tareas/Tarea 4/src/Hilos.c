@@ -13,8 +13,7 @@ int arreglo_copia[TAMANIO];
 // Un hilo por cada elemento del arreglo.
 pthread_t hilos[TAMANIO];
 
-// Hilo que controlará la sección crítica
-pthread_mutex_t mutex;
+pthread_mutex_t lock;
 
 /*
  * Crea una copia del arreglo principal.
@@ -90,13 +89,14 @@ void ejecutar(int iteraciones){
 		int hilo;
 		// Creamos los hilos por cada elemento del array
 		// y los ejecutamos con la función checarVecinos
-		while(i < 6){
+		while(i < 6)
+		{
 			hilo = i;
-			pthread_mutex_lock(&mutex);
+			pthread_mutex_lock(&lock);
 			printf("\nVerificando hilo %d en tiempo %d\n", i, t);
 			pthread_create(&hilos[i], NULL, (void*)checarVecinos, (void*)&hilo);
 			printf("Terminando hilo %d en tiempo %d\n", i, t);
-			pthread_mutex_unlock(&mutex);
+			pthread_mutex_unlock(&lock);
 			i++;
 		}
 
@@ -125,13 +125,13 @@ int main(int argc, char** argv){
 		printf("\nERROR: Demasiados parámetros.\n\n");
         return 1;
 	}
-	if (pthread_mutex_init(&mutex, NULL) != 0){
-        printf("\nERROR: No se pudo inicializr hilo mutex.\n\n");
+	if (pthread_mutex_init(&lock, NULL) != 0){
+        printf("\nERROR: No se pudo inicializar hilo.\n\n");
         return 1;
     }
-
+	
 	int num_it = atoi(argv[1]);
 	ejecutar(num_it);
-	pthread_mutex_destroy(&mutex);
+	pthread_mutex_destroy(&lock);
 	return 0;
 }
