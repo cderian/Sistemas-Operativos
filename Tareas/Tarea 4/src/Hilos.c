@@ -112,9 +112,14 @@ void ejecutar(){
 /*
  * Función principal.
  */
-int main(){
+int main(int argc, char** argv){
+
+	if(argc < 2){
+		printf("\nERROR: Falto especificar número de iteraciones.\n\n");
+        return 1;
+	}
 	if (pthread_mutex_init(&mutex, NULL) != 0){
-        printf("\n Fallo la inicializacion del hilo mutex\n");
+        printf("\nERROR: No se pudo inicializr hilo mutex.\n\n");
         return 1;
     }
 
