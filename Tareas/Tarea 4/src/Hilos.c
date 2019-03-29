@@ -48,13 +48,8 @@ void imprimir(){
  * Para el primer elemento, su vecino adyacente izquierdo tendrá valor 0.
  * Para el último elemento, su vecino adyacente derecho tendrá valor 0.
  */
-void *checarVecinos(void *id_hilo){
-	// Iniciamos sección crítica
-	pthread_mutex_lock(&mutex);
-
-	int id = (int*) id_hilo;
-
-	printf("\nVerificando hilo %d en tiempo 0\n", id);
+void checarVecinos(int *id_hilo){
+	int id = *id_hilo;
 	
 	// Estado Arreglo Posición 1
 	if(id == 0){
@@ -78,10 +73,6 @@ void *checarVecinos(void *id_hilo){
 			arreglo[5] = 0;
 		}
 	}
-	printf("Terminando hilo %d en tiempo 0\n", id);
-
-	// Finalizamos sección crítica
-	pthread_mutex_unlock(&mutex);
 }
 
 /*
@@ -93,13 +84,18 @@ void ejecutar(){
 	imprimir();
     copiar();
 
-	// Creamos los hilos y los ejecutamos con la función verificación
-	pthread_create(&(hilos[0]), NULL, checarVecinos, (int *) 0);
-	pthread_create(&(hilos[1]), NULL, checarVecinos, (int *) 1);
-	pthread_create(&(hilos[2]), NULL, checarVecinos, (int *) 2);
-	pthread_create(&(hilos[3]), NULL, checarVecinos, (int *) 3);
-	pthread_create(&(hilos[4]), NULL, checarVecinos, (int *) 4);
-	pthread_create(&(hilos[5]), NULL, checarVecinos, (int *) 5);
+	int i = 0;
+	int hilo;
+	while(i < 6){
+		hilo = i;
+		pthread_mutex_lock(&mutex);
+		printf("\nVerificando hilo %d en tiempo 0\n", i);
+		// Creamos los hilos y los ejecutamos con la función checarVecinos
+		pthread_create(&hilos[i], NULL, (void*)checarVecinos, (void*)&hilo);
+		printf("Terminando hilo %d en tiempo 0\n", i);
+		pthread_mutex_unlock(&mutex);
+		i++;
+	}
 
 	// Esperamos que termine la ejecución del hilo.
 	pthread_join(hilos[0], NULL);
