@@ -82,18 +82,19 @@ void ejecutar(int iteraciones){
 
 	for(int t = 0; t < iteraciones; t++)
 	{
-	
+		printf("\n------------------ TIEMPO %d ------------------", t);
 		// Imprimos el array inicial y creamos una copia de él.
 		imprimir();
 		copiar();
 
 		int i = 0;
 		int hilo;
+		// Creamos los hilos por cada elemento del array
+		// y los ejecutamos con la función checarVecinos
 		while(i < 6){
 			hilo = i;
 			pthread_mutex_lock(&mutex);
 			printf("\nVerificando hilo %d en tiempo %d\n", i, t);
-			// Creamos los hilos y los ejecutamos con la función checarVecinos
 			pthread_create(&hilos[i], NULL, (void*)checarVecinos, (void*)&hilo);
 			printf("Terminando hilo %d en tiempo %d\n", i, t);
 			pthread_mutex_unlock(&mutex);
@@ -110,6 +111,7 @@ void ejecutar(int iteraciones){
 
 		// Imprimos el array resultante.
 		imprimir();
+		printf("----------------------------------------------\n");
 	}
 }
 
