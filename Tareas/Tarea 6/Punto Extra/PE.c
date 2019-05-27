@@ -2,6 +2,6 @@
 
 int main()
 {
-    printf("Este es el último punto extra del curso");
+    printf("Este es el último punto extra del curso\n");
     return 0;
 }
