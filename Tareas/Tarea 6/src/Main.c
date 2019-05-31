@@ -5,19 +5,81 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+
+/*#include <sys/stat.h>
+#include <dirent.h>*/
+
 #define ERROR "Error: Ingresaste parámetros de más.\n"
 #define ERROR_BANDERA "Error: Ingresaste una bandera equivocada.\nOpciones:\n-b : Buscar archivo\n-h : Histograma\n"
+#define ENCONTRAR(archivo) execl("/usr/bin/find","find", archivo, NULL)
+#define IMPRIMIR_DIRECCION() execl("/bin/pwd","pwd", NULL);
 #define BANDERA_VALIDA(bandera, entrada) (strcmp (bandera, entrada) == 0)
 
-void b(char* archivo)
+/*void b(char* archivo)
 {
     printf("%s\n", archivo);
 	printf("Función no implementada\n");
+}*/
+
+int b(const char * archivo)
+{
+	pid_t pid;
+	int status;
+	pid = fork();
+
+	switch(pid){
+		case -1:
+			perror("Error en el fork\n");
+			exit(-1);
+		case 0:
+			if( (ENCONTRAR(archivo) < 0)){
+                perror("Error de execl.\n");
+			    exit(-1);
+            }else{
+                printf("Encontrado! ");
+                IMPRIMIR_DIRECCION();
+                //ENCONTRAR(archivo);
+            }
+			break;
+		default:
+			while(wait(&status) != pid);
+				if(status != 0)
+				{
+					printf("Error del hijo\n");
+				}
+	}
+
+	return status;
 }
 
-void h()
+int h()
 {
-	printf("Función no implementada\n");
+	//printf("Función no implementada\n");
+	pid_t pid;
+	int status;
+	pid = fork();
+
+	switch(pid){
+		case -1:
+			perror("Error en el fork\n");
+			exit(-1);
+		case 0:
+			execl("/usr/bin/du","du", "-ba", NULL);
+            perror("Error de execl.\n");
+			exit(-1);
+			break;
+		default:
+			while(wait(&status) != pid);
+				if(status != 0)
+				{
+					printf("Error del hijo\n");
+				}
+	}
+
+	return status;
 }
 
 /**
@@ -25,6 +87,11 @@ void h()
  */
 int main(int argc, char** argv)
 {
+	/*struct stat estru;
+    struct dirent *dt;
+    DIR *dire;
+    char dir;*/
+
 	//Caso: Bandera -b
 	if (BANDERA_VALIDA(argv[1], "-b"))
 	{
@@ -36,6 +103,13 @@ int main(int argc, char** argv)
 		else
 		{
 			b(argv[2]);
+			//readdir lee el directorio completo
+        	/*while((dt=readdir(dire)) != NULL)
+        	{
+            	//Con stat vemos el estado de los archivos
+            	stat(dt->d_name, &estru);
+            	printf("%-50s %s",dt->d_name, ctime(&estru.st_atime));
+        	}*/
 		}
 	}
 	//Caso: Bandera -h
