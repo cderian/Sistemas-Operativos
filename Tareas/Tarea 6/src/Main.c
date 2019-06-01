@@ -13,26 +13,24 @@
 #include <dirent.h>
 
 #define ERROR "Error: Ingresaste parámetros de más.\n"
-#define ERROR_BANDERA "Error: Ingresaste una bandera equivocada.\nOpciones:\n-b : Buscar archivo\n-h : Histograma\n"
-#define ENCONTRAR(archivo) execl("/usr/bin/find","find", archivo, NULL)
+#define OPCIONES_BANDERA "Opciones:\n-b : Buscar archivo\n-h : Histograma\n"
 #define IMPRIMIR_DIRECCION() execl("/bin/pwd","pwd", NULL);
 #define BANDERA_VALIDA(bandera, entrada) (strcmp (bandera, entrada) == 0)
 
-/*void b(char* archivo)
-{
-    printf("%s\n", archivo);
-	printf("Función no implementada\n");
-}*/
+struct dirent **namelist;
 
+/*
+ * Busca un archivo dentro de un directorio
+ */
 int b(const char * archivo)
 {
 	char* resultado = "No encontrado";
-	struct dirent **namelist;
 	
+	//Número de archivos del directorio
 	int n;
 	n = scandir(".", &namelist, 0, alphasort);
 	if (n < 0){
-		perror("scandir");
+		perror("No exis");
 	}
 	else
 	{
@@ -44,40 +42,22 @@ int b(const char * archivo)
 				resultado = "Encontrado!";
 				//execl("/bin/pwd","pwd", NULL);
 			}
+
+			// Se libera memoria
 			free(namelist[n]);
 		}
+		// Se libera memoria
 		free(namelist);
 	}
 	printf("%s\n", resultado);
-	
-	/*pid_t pid;
-	int status;
-	pid = fork();*/
-	/*switch(pid){
-		case -1:
-			perror("Error en el fork\n");
-			exit(-1);
-		case 0:
-			if( (ENCONTRAR(archivo) < 0)){
-                perror("Error de execl.\n");
-			    exit(-1);
-            }else{
-                printf("Encontrado! ");
-                IMPRIMIR_DIRECCION();
-                //ENCONTRAR(archivo);
-            }
-			break;
-		default:
-			while(wait(&status) != pid);
-				if(status != 0)
-				{
-					printf("Error del hijo\n");
-				}
-	}*/
-	//return status;
 	return 0;
 }
 
+/*
+ * Realiza un histograma de los archivos que se encuentran
+ * en un directorio.
+ * Muestra el nombre y tamaño en bytes de los archivos.
+ */
 int h()
 {
 	pid_t pid;
@@ -110,12 +90,21 @@ int h()
 int main(int argc, char** argv)
 {
 	//Caso: Bandera -b
-	if (BANDERA_VALIDA(argv[1], "-b"))
+	if (argc == 1)
+	{
+		printf("Tienes que proporcionar una bandera\n");
+		printf(OPCIONES_BANDERA);
+	}
+	else if (BANDERA_VALIDA(argv[1], "-b"))
 	{
 		if(argc > 3)
 		{
-			printf(ERROR);
-			printf("Sólo ingresa el nombre del archivo\n");
+			printf("Error: Ingresaste parámetros de más.\n");
+			printf("Sólo ingresa el nombre de un archivo archivo\n");
+		}
+		else if (argc < 3)
+		{
+			printf("Error: Ingresa el nombre del archivo que quieres buscar.\n");
 		}
 		else
 		{
@@ -137,7 +126,8 @@ int main(int argc, char** argv)
 	}
 	else
 	{
-		printf(ERROR_BANDERA);
+		printf("Error: Ingresaste una bandera equivocada.\n");
+		printf(OPCIONES_BANDERA);
 	}
 
 	return 0;
