@@ -2,22 +2,20 @@
 // Tarea 6.
 // Estrada Gómez César Derian. 31222446-4.
 
+#include <dirent.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <sys/wait.h>
 
-#include <sys/stat.h>
-#include <dirent.h>
-
-#define ERROR "Error: Ingresaste parámetros de más.\n"
 #define OPCIONES_BANDERA "Opciones:\n-b : Buscar archivo\n-h : Histograma\n"
-#define IMPRIMIR_DIRECCION() execl("/bin/pwd","pwd", NULL);
 #define BANDERA_VALIDA(bandera, entrada) (strcmp (bandera, entrada) == 0)
 
-struct dirent **namelist;
+struct dirent **archivos;
 
 /*
  * Busca un archivo dentro de un directorio
@@ -25,31 +23,39 @@ struct dirent **namelist;
 int b(const char * archivo)
 {
 	char* resultado = "No encontrado";
+	char cwd[PATH_MAX];
+	bool ENCONTRADO = false;
 	
 	//Número de archivos del directorio
 	int n;
-	n = scandir(".", &namelist, 0, alphasort);
+	n = scandir(".", &archivos, 0, alphasort);
 	if (n < 0){
-		perror("No exis");
+		perror("Esta carpeta se encuentra vacía");
 	}
 	else
 	{
 		while(n--)
 		{
-			printf("Tipo: %d - %s \n", namelist[n]->d_type, namelist[n]->d_name);
-			if ((strcmp (namelist[n]->d_name, archivo) == 0))
+			//printf("Tipo: %d - %s \n", archivos[n]->d_type, archivos[n]->d_name);
+			if (strcmp (archivos[n]->d_name, archivo) == 0)
 			{
-				resultado = "Encontrado!";
+				ENCONTRADO = true;
 				//execl("/bin/pwd","pwd", NULL);
 			}
 
 			// Se libera memoria
-			free(namelist[n]);
+			free(archivos[n]);
 		}
 		// Se libera memoria
-		free(namelist);
+		free(archivos);
 	}
-	printf("%s\n", resultado);
+
+	if(ENCONTRADO){
+		printf("Encontrado! %s/%s\n", getcwd(cwd, sizeof(cwd)), archivo);
+	}else{
+		printf("No encontrado!\n");
+	}
+
 	return 0;
 }
 
@@ -116,8 +122,7 @@ int main(int argc, char** argv)
 	{
 		if(argc > 2)
 		{
-			printf(ERROR);
-			printf("No tienes que proporcionar más parámetros\n");
+			printf("Error: No tienes que proporcionar parámetros\n");
 		}
 		else
 		{
