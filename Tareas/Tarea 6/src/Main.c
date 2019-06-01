@@ -18,50 +18,37 @@
 /*
  * Busca un archivo dentro de un directorio
  */
-int b(struct dirent **archivos, int n, const char * archivo)
+int b(const char * archivo)
 {
-	char* resultado = "No encontrado";
-	char cwd[PATH_MAX];
-	bool ENCONTRADO = false;
-	
-	if (n < 0){
-		perror("Esta carpeta se encuentra vacía");
-	}
-	else
-	{
-		while(n--)
-		{
-			//printf("Tipo: %d - %s \n", archivos[n]->d_type, archivos[n]->d_name);
-			/*if (archivos[n]->d_type == 4)
-			{
-				struct dirent **subarchivos = archivos[n];
-				//Número de archivos del directorio
-				int n2;
-				n2 = scandir(".", &subarchivos, 0, alphasort);
-				b(subarchivos, n2, archivo);
-			}*/
-			
-			if (strcmp (archivos[n]->d_name, archivo) == 0)
-			{
-				ENCONTRADO = true;
-				printf("Encontrado! %s/%s\n", getcwd(cwd, sizeof(cwd)), archivo);
-				break;
+	pid_t pid;
+	int status;
+	pid = fork();
+	int encontrado = 1;
+
+	switch(pid){
+		case -1:
+			perror("Error en el fork\n");
+			exit(-1);
+		case 0:
+			encontrado = execl("/usr/bin/find","find", "-iname", archivo, NULL);
+			if(encontrado == -1){
+				printf("Encontrado!\n");
+			} else{
+				printf("No encontrado");
 			}
-
-			// Se libera memoria
-			free(archivos[n]);
-		}
-		// Se libera memoria
-		free(archivos);
+            perror("Error de execl.\n");
+			break;
+		default:
+			while(wait(&status) != pid);
+				if(status != 0)
+				{
+					printf("Error del hijo\n");
+				}
 	}
 
-	if (!ENCONTRADO)
-	{
-		printf("No encontrado!\n");
-	}
-	
-	return 0;
+	return status;
 }
+
 
 /*
  * Realiza un histograma de los archivos que se encuentran
@@ -118,11 +105,7 @@ int main(int argc, char** argv)
 		}
 		else
 		{
-			struct dirent **archivos;
-			//Número de archivos del directorio
-			int n;
-			n = scandir(".", &archivos, 0, alphasort);
-			b(archivos, n, argv[2]);
+			b(argv[2]);
 		}
 	}
 	//Caso: Bandera -h
