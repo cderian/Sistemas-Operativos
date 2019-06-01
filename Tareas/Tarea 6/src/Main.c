@@ -20,35 +20,58 @@
  */
 int b(const char * archivo)
 {
-	pid_t pid;
-	int status;
-	pid = fork();
-	int encontrado = 1;
+	char cwd[PATH_MAX];
+	char *buffer;
+	FILE *p;
+	char ch;
 
-	switch(pid){
-		case -1:
-			perror("Error en el fork\n");
-			exit(-1);
-		case 0:
-			encontrado = execl("/usr/bin/find","find", "-iname", archivo, NULL);
-			if(encontrado == -1){
-				printf("Encontrado!\n");
-			} else{
-				printf("No encontrado");
-			}
-            perror("Error de execl.\n");
-			break;
-		default:
-			while(wait(&status) != pid);
-				if(status != 0)
-				{
-					printf("Error del hijo\n");
-				}
+	buffer = malloc(strlen(archivo) + 5);
+	strcpy(buffer, archivo);
+	char a[500] = "find -iname ";
+	char subdireccion[500] = "";
+	
+	strcat(a, buffer);
+	int tamanio;
+
+	p = popen(a,"r");
+	if( p == NULL)
+	{
+		puts("Unable to open process");
+		return(1);
+	}
+	
+	int n = 0;
+	while( (ch=fgetc(p)) != EOF)
+	{
+		// Guardamos la dirección del archivo.
+		// La dirección esta dada a partir de la carpeta donde estamos.
+		subdireccion[n] = ch;
+		n = n+1;
+		tamanio = tamanio +1;
+	}
+	
+	if(tamanio == 0)
+	{
+		printf("No encontrado!\n");
+	}
+	else
+	{
+		// Obtenemos la ruta completa del archivo.
+		char direccion[500] = "";
+		int i = 1;
+		while (i < sizeof(subdireccion) )
+		{
+			direccion[i-1] = subdireccion[i];
+			i = i+1;
+		}
+
+		printf("Encontrado! %s%s", getcwd(cwd, sizeof(cwd)), direccion);
 	}
 
-	return status;
+	free(buffer);	
+	pclose(p);
+	return 0;
 }
-
 
 /*
  * Realiza un histograma de los archivos que se encuentran
@@ -85,7 +108,7 @@ int h()
  * Función principal.
  */
 int main(int argc, char** argv)
-{
+{	
 	//Caso: Bandera -b
 	if (argc == 1)
 	{
