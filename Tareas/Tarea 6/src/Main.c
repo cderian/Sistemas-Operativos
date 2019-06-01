@@ -15,20 +15,15 @@
 #define OPCIONES_BANDERA "Opciones:\n-b : Buscar archivo\n-h : Histograma\n"
 #define BANDERA_VALIDA(bandera, entrada) (strcmp (bandera, entrada) == 0)
 
-struct dirent **archivos;
-
 /*
  * Busca un archivo dentro de un directorio
  */
-int b(const char * archivo)
+int b(struct dirent **archivos, int n, const char * archivo)
 {
 	char* resultado = "No encontrado";
 	char cwd[PATH_MAX];
 	bool ENCONTRADO = false;
 	
-	//Número de archivos del directorio
-	int n;
-	n = scandir(".", &archivos, 0, alphasort);
 	if (n < 0){
 		perror("Esta carpeta se encuentra vacía");
 	}
@@ -37,10 +32,20 @@ int b(const char * archivo)
 		while(n--)
 		{
 			//printf("Tipo: %d - %s \n", archivos[n]->d_type, archivos[n]->d_name);
+			/*if (archivos[n]->d_type == 4)
+			{
+				struct dirent **subarchivos = archivos[n];
+				//Número de archivos del directorio
+				int n2;
+				n2 = scandir(".", &subarchivos, 0, alphasort);
+				b(subarchivos, n2, archivo);
+			}*/
+			
 			if (strcmp (archivos[n]->d_name, archivo) == 0)
 			{
 				ENCONTRADO = true;
-				//execl("/bin/pwd","pwd", NULL);
+				printf("Encontrado! %s/%s\n", getcwd(cwd, sizeof(cwd)), archivo);
+				break;
 			}
 
 			// Se libera memoria
@@ -50,12 +55,11 @@ int b(const char * archivo)
 		free(archivos);
 	}
 
-	if(ENCONTRADO){
-		printf("Encontrado! %s/%s\n", getcwd(cwd, sizeof(cwd)), archivo);
-	}else{
+	if (!ENCONTRADO)
+	{
 		printf("No encontrado!\n");
 	}
-
+	
 	return 0;
 }
 
@@ -114,7 +118,11 @@ int main(int argc, char** argv)
 		}
 		else
 		{
-			b(argv[2]);
+			struct dirent **archivos;
+			//Número de archivos del directorio
+			int n;
+			n = scandir(".", &archivos, 0, alphasort);
+			b(archivos, n, argv[2]);
 		}
 	}
 	//Caso: Bandera -h
