@@ -9,8 +9,8 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
-/*#include <sys/stat.h>
-#include <dirent.h>*/
+#include <sys/stat.h>
+#include <dirent.h>
 
 #define ERROR "Error: Ingresaste parámetros de más.\n"
 #define ERROR_BANDERA "Error: Ingresaste una bandera equivocada.\nOpciones:\n-b : Buscar archivo\n-h : Histograma\n"
@@ -26,11 +26,34 @@
 
 int b(const char * archivo)
 {
-	pid_t pid;
+	char* resultado = "No encontrado";
+	struct dirent **namelist;
+	
+	int n;
+	n = scandir(".", &namelist, 0, alphasort);
+	if (n < 0){
+		perror("scandir");
+	}
+	else
+	{
+		while(n--)
+		{
+			printf("Tipo: %d - %s \n", namelist[n]->d_type, namelist[n]->d_name);
+			if ((strcmp (namelist[n]->d_name, archivo) == 0))
+			{
+				resultado = "Encontrado!";
+				//execl("/bin/pwd","pwd", NULL);
+			}
+			free(namelist[n]);
+		}
+		free(namelist);
+	}
+	printf("%s\n", resultado);
+	
+	/*pid_t pid;
 	int status;
-	pid = fork();
-
-	switch(pid){
+	pid = fork();*/
+	/*switch(pid){
 		case -1:
 			perror("Error en el fork\n");
 			exit(-1);
@@ -50,14 +73,13 @@ int b(const char * archivo)
 				{
 					printf("Error del hijo\n");
 				}
-	}
-
-	return status;
+	}*/
+	//return status;
+	return 0;
 }
 
 int h()
 {
-	//printf("Función no implementada\n");
 	pid_t pid;
 	int status;
 	pid = fork();
@@ -87,11 +109,6 @@ int h()
  */
 int main(int argc, char** argv)
 {
-	/*struct stat estru;
-    struct dirent *dt;
-    DIR *dire;
-    char dir;*/
-
 	//Caso: Bandera -b
 	if (BANDERA_VALIDA(argv[1], "-b"))
 	{
@@ -103,13 +120,6 @@ int main(int argc, char** argv)
 		else
 		{
 			b(argv[2]);
-			//readdir lee el directorio completo
-        	/*while((dt=readdir(dire)) != NULL)
-        	{
-            	//Con stat vemos el estado de los archivos
-            	stat(dt->d_name, &estru);
-            	printf("%-50s %s",dt->d_name, ctime(&estru.st_atime));
-        	}*/
 		}
 	}
 	//Caso: Bandera -h
@@ -124,7 +134,6 @@ int main(int argc, char** argv)
 		{
 			h();
 		}
-
 	}
 	else
 	{
